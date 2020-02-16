@@ -1,0 +1,67 @@
+---
+title: "Spotify Viz"
+author: "Oscar Leal 1903161"
+date: "2/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+library(data.table)
+library(ggplot2)
+theme_set(theme_minimal()) # set global theme for ggplot
+```
+
+## Reading the data from TidyTuesdays, and exploring.
+
+```{r, echo=TRUE, message=TRUE}
+spotify_songs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv')
+
+tail(spotify_songs)
+typeof(spotify_songs)
+spotify_songs <- as.data.table(spotify_songs)
+
+```
+```{r, echo = TRUE}
+skimr::skim(spotify_songs)
+```
+
+After skimming the data we can say we have a nice distribution of numeric and character type variables. 
+
+It was interesting to find the variable *danceability* as a value to determine how danceable is a song from 0.0 to 1.0, and how the mean tends to be positive!
+*Energy* was also positive. 
+
+There are some rows with long album names, songs and playlist. 
+
+We will convert *key* to factor! Since they are values resembling the overall key of a track. 
+
+```{r, echo = TRUE}
+unique(spotify_songs$key)
+
+spotify_songs$key <- as.factor(spotify_songs$key)
+
+# Dropping NA values. 5 occurrences, no need to keep!
+spotify_songs <- spotify_songs[!(is.na(track_name) & is.na(track_artist) & is.na(track_album_name))]
+
+length(unique(spotify_songs$track_name)) - nrow(spotify_songs)
+
+toprepeated <- head(spotify_songs[, .(count = .N), by = track_id][count > 1][order(-count)])
+
+topsongsrepeated <- spotify_songs[track_id %in% c(toprepeated$track_id), c('track_name', 'track_artist', 'track_album_name', 'playlist_name', 'playlist_id')][order(track_artist)]
+
+unique(topsongsrepeated$track_artist)
+
+
+```
+
+It also seems that there are repeating songs, since there are only 23449 unique values out of 32828 (not including the 5 NAs).
+
+The artists that have repeated songs are Kygo, Riton, The Chainsmokers and Travis Scott, the same song appears in different playlists.
+Kygo even has two songs that are commonly added to playlists!
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
