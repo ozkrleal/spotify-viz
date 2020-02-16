@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message= FALSE}
 library(tidyverse)
 library(data.table)
 library(ggplot2)
@@ -28,7 +28,7 @@ theme_set(theme_minimal()) # set global theme for ggplot
 spotify_songs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv')
 
 tail(spotify_songs)
-typeof(spotify_songs)
+#typeof(spotify_songs)
 spotify_songs <- as.data.table(spotify_songs)
 
 ```
@@ -86,8 +86,8 @@ Now... about the long lengths... we can notice in the output of the playlist nam
 
 ```{r, echo = TRUE}
 spotify_songs[nchar(playlist_name)>100][,.N, by = playlist_name]
-spotify_songs[nchar(playlist_name)>80][,.N, by = playlist_name][order((-N))]
-spotify_songs[nchar(playlist_name)>50][,.N, by = playlist_name][order((-N))]
+nrow(spotify_songs[nchar(playlist_name)>80][,.N, by = playlist_name][order((-N))])
+nrow(spotify_songs[nchar(playlist_name)>50][,.N, by = playlist_name][order((-N))])
 
 ```
 
@@ -95,7 +95,7 @@ It seems there are really specific playlists! There was only one playlist over t
 
 Lets explore the different *valence* by genres. If the value that corresponds to valence is actually the musical positiveness conveyed by a track from a low score (0.0) to a high score (1.0).
 
-```{r, warning =FALSE}
+```{r, warning =FALSE, message = FALSE}
 ggplot(
   spotify_songs,
   aes(x = valence, y = playlist_subgenre, fill = playlist_genre),
@@ -166,9 +166,9 @@ plotdf <- df %>%
 
 Upon finding ggradar:
 
-```{r}
-ggRadar(data = plotdf, aes(group = year), size = 3, ylim = 1.02) +
-  scale_color_gradient(low="#62bba5", high="#62bba5") + scale_fill_gradient(low="#62bba5", high="#62bba5") +
+```{r, eval = FALSE}
+ggRadar(data = plotdf, aes(group = year), size = 3, ylim = 1.1) +
+  scale_color_gradient(low="#C1D8B9", high="#C1D8B9") + scale_fill_gradient(low="#C1D8B9", high="#C1D8B9") +
   theme(legend.position = "none",
         plot.title = element_text(face="bold", size=14),
         plot.subtitle = element_text(size=12),
@@ -182,7 +182,10 @@ ggRadar(data = plotdf, aes(group = year), size = 3, ylim = 1.02) +
   transition_time(year) + shadow_mark(alpha=0.1, size=0.5, colour = "grey", fill = "#FFFFFF")
 
 anim_save(filename= "radarchangesovertime.gif", animation = last_animation())
+
 ```
+![Radar by Year qualitative variables](radarchangesovertime.gif)
+
 
 Recently songs have trended less energetic, sader, louder, more danceable, and faster.
 
@@ -202,24 +205,25 @@ ggplot(spotify_songs2, aes(y=track_popularity, x=playlist_subgenre,
   legend.position = "none") 
 ```
 
+And last but not least, a boxplot showing the popularity of each subgenre.
 
 ```{r, echo= FALSE, include = FALSE}
-temp_songs <- spotify_songs %>%
-  mutate(year = as.integer(substr(track_album_release_date, 0, 4))) %>%
-  filter(year >= 1990 & playlist_genre %in% c('latin', 'rock', 'r&b')) %>%
-  group_by(year) %>%
-  mutate(mean_tempo = mean(tempo))
+#temp_songs <- spotify_songs %>%
+#  mutate(year = as.integer(substr(track_album_release_date, 0, 4))) %>%
+#  filter(year >= 1990 & playlist_genre %in% c('latin', 'rock', 'r&b')) %>%
+#  group_by(year) %>%
+#  mutate(mean_tempo = mean(tempo))
 
 
 
-ggplot(
-  temp_songs,
-  aes(year, mean_tempo, group = playlist_genre, color = factor(playlist_genre))
-  ) +
-  geom_line() +
-  scale_color_viridis_d() +
-  labs(x = "Day of Month", y = "Temperature") +
-  theme(legend.position = "top") + 
-  geom_point() +
-  transition_reveal(year)
+#ggplot(
+#  temp_songs,
+#  aes(year, mean_tempo, group = playlist_genre, color = factor(playlist_genre))
+#  ) +
+#  geom_line() +
+#  scale_color_viridis_d() +
+#  labs(x = "Day of Month", y = "Temperature") +
+#  theme(legend.position = "top") + 
+ # geom_point() +
+#  transition_reveal(year)
 ```
